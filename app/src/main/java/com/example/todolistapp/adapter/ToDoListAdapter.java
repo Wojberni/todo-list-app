@@ -11,7 +11,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.todolistapp.R;
-import com.example.todolistapp.model.ToDoTask;
+import com.example.todolistapp.room.TodoEntity;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -20,10 +20,10 @@ import java.util.Locale;
 
 public class ToDoListAdapter extends RecyclerView.Adapter<ToDoListAdapter.ToDoViewHolder> {
 
-    private final List<ToDoTask> toDoTaskList;
+    private final List<TodoEntity> toDoTaskList;
     private static ToDoViewClickListener toDoViewClickListener;
 
-    public ToDoListAdapter(List<ToDoTask> toDoTaskList, ToDoViewClickListener toDoViewClickListener) {
+    public ToDoListAdapter(List<TodoEntity> toDoTaskList, ToDoViewClickListener toDoViewClickListener) {
         this.toDoTaskList = toDoTaskList;
         ToDoListAdapter.toDoViewClickListener = toDoViewClickListener;
     }
@@ -47,7 +47,7 @@ public class ToDoListAdapter extends RecyclerView.Adapter<ToDoListAdapter.ToDoVi
         holder.deadlineDate.setText(simpleDateFormat.format(date));
         holder.done.setChecked(toDoTaskList.get(position).isDone());
         holder.notification.setChecked(toDoTaskList.get(position).isNotification());
-        holder.attachment.setChecked(toDoTaskList.get(position).isAttachment());
+        holder.attachment.setChecked(toDoTaskList.get(position).getAttachmentPath() != null);
     }
 
     @Override
@@ -64,7 +64,7 @@ public class ToDoListAdapter extends RecyclerView.Adapter<ToDoListAdapter.ToDoVi
         private CheckBox done;
         private CheckBox notification;
         private CheckBox attachment;
-        private Button save;
+        private Button edit;
         private Button delete;
 
         public ToDoViewHolder(@NonNull View itemView) {
@@ -76,10 +76,10 @@ public class ToDoListAdapter extends RecyclerView.Adapter<ToDoListAdapter.ToDoVi
             done = itemView.findViewById(R.id.cardViewDone);
             notification = itemView.findViewById(R.id.cardViewNotify);
             attachment = itemView.findViewById(R.id.cardViewAttachment);
-            save = itemView.findViewById(R.id.cardViewSave);
+            edit = itemView.findViewById(R.id.cardViewEdit);
             delete = itemView.findViewById(R.id.cardViewDelete);
             notification.setOnClickListener(this);
-            save.setOnClickListener(this);
+            edit.setOnClickListener(this);
             delete.setOnClickListener(this);
         }
 

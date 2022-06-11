@@ -28,25 +28,23 @@
 
     <TextView
         android:id="@+id/cardViewCreationDate"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:text="TextView"
         android:textSize="20sp"
+        app:layout_constraintEnd_toStartOf="@+id/cardViewEdit"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/cardViewDescription" />
 
     <TextView
         android:id="@+id/cardViewDeadlineDate"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:text="TextView"
         android:textSize="20sp"
-        app:layout_constraintBottom_toBottomOf="@+id/cardViewCreationDate"
-        app:layout_constraintEnd_toStartOf="@+id/cardViewAttachment"
-        app:layout_constraintHorizontal_bias="1.0"
-        app:layout_constraintStart_toEndOf="@+id/cardViewCreationDate"
-        app:layout_constraintTop_toBottomOf="@+id/cardViewDescription"
-        app:layout_constraintVertical_bias="0.0" />
+        app:layout_constraintEnd_toStartOf="@+id/cardViewEdit"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/cardViewCreationDate" />
 
     <CheckBox
         android:id="@+id/cardViewDone"
@@ -68,18 +66,19 @@
         android:id="@+id/cardViewAttachment"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:clickable="false"
         android:text="Attachment"
         app:layout_constraintEnd_toStartOf="@+id/cardViewNotify"
         app:layout_constraintTop_toTopOf="parent" />
 
     <Button
-        android:id="@+id/cardViewSave"
+        android:id="@+id/cardViewEdit"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="SAVE"
+        android:text="EDIT"
         app:layout_constraintEnd_toStartOf="@+id/cardViewDelete"
-        app:layout_constraintHorizontal_bias="0.2"
-        app:layout_constraintStart_toEndOf="@+id/cardViewDeadlineDate"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toEndOf="@+id/cardViewTitle"
         app:layout_constraintTop_toBottomOf="@+id/cardViewAttachment" />
 
     <Button

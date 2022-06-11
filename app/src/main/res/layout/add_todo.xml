@@ -57,8 +57,9 @@
         android:text="Deadline Date"
         android:textSize="22sp"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.503"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/addTodoInputCreationDate" />
+        app:layout_constraintTop_toBottomOf="@+id/addTodoCreationDate" />
 
     <TextView
         android:id="@+id/addTodoAttachmentText"
@@ -69,15 +70,15 @@
         android:textSize="22sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/addTodoInputDeadlineDate" />
+        app:layout_constraintTop_toBottomOf="@+id/addTodoDeadlineDate" />
 
     <EditText
         android:id="@+id/addTodoInputTitle"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
         android:ems="10"
         android:inputType="textPersonName"
+        android:textSize="20sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/addTodoTitleText" />
@@ -86,9 +87,9 @@
         android:id="@+id/addTodoInputDescription"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
         android:ems="10"
         android:inputType="textPersonName"
+        android:textSize="20sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/addTodoDescriptionText" />
@@ -103,8 +104,8 @@
         app:layout_constraintEnd_toStartOf="@+id/addTodoInputAttachment"
         app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/addTodoInputAttachment"
-        app:layout_constraintVertical_bias="0.39" />
+        app:layout_constraintTop_toBottomOf="@+id/addTodoFilePath"
+        app:layout_constraintVertical_bias="0.19" />
 
     <CheckBox
         android:id="@+id/addTodoCheckBoxNotifications"
@@ -116,8 +117,8 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toEndOf="@+id/addTodoInputAttachment"
-        app:layout_constraintTop_toBottomOf="@+id/addTodoInputAttachment"
-        app:layout_constraintVertical_bias="0.39" />
+        app:layout_constraintTop_toBottomOf="@+id/addTodoFilePath"
+        app:layout_constraintVertical_bias="0.19" />
 
     <Button
         android:id="@+id/addTodoInputCreationDate"
@@ -182,5 +183,60 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
+
+    <TextView
+        android:id="@+id/addTodoDeadlineDate"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="DATE"
+        android:textSize="20sp"
+        app:layout_constraintEnd_toEndOf="@+id/addTodoInputDeadlineDate"
+        app:layout_constraintStart_toStartOf="@+id/addTodoInputDeadlineDate"
+        app:layout_constraintTop_toBottomOf="@+id/addTodoInputDeadlineDate" />
+
+    <TextView
+        android:id="@+id/addTodoDeadlineTime"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="TIME"
+        android:textSize="20sp"
+        app:layout_constraintEnd_toEndOf="@+id/addTodoInputDeadlineTime"
+        app:layout_constraintStart_toStartOf="@+id/addTodoInputDeadlineTime"
+        app:layout_constraintTop_toBottomOf="@+id/addTodoInputDeadlineTime" />
+
+    <TextView
+        android:id="@+id/addTodoFilePath"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="File"
+        android:textSize="20sp"
+        app:layout_constraintEnd_toEndOf="@+id/addTodoInputAttachment"
+        app:layout_constraintStart_toStartOf="@+id/addTodoInputAttachment"
+        app:layout_constraintTop_toBottomOf="@+id/addTodoInputAttachment" />
+
+    <TextView
+        android:id="@+id/addTodoCreationDate"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="DATE"
+        android:textSize="20sp"
+        app:layout_constraintEnd_toEndOf="@+id/addTodoInputCreationDate"
+        app:layout_constraintStart_toStartOf="@+id/addTodoInputCreationDate"
+        app:layout_constraintTop_toBottomOf="@+id/addTodoInputCreationDate" />
+
+    <TextView
+        android:id="@+id/addTodoCreationTime"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="TIME"
+        android:textSize="20sp"
+        app:layout_constraintEnd_toEndOf="@+id/addTodoInputCreationTime"
+        app:layout_constraintStart_toStartOf="@+id/addTodoInputCreationTime"
+        app:layout_constraintTop_toBottomOf="@+id/addTodoInputCreationTime" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

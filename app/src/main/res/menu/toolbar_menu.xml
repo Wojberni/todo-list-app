@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android" >
+
+    <item
+        android:id="@+id/actionHideTodos"
+        android:title="Hide Tasks" />
+
+    <item android:id="@+id/actionFilterByCategory"
+        android:title="Filter By Category" />
+
+    <item android:id="@+id/actionSetNotificationTime"
+        android:title="Notification Time" />
+
+</menu>
