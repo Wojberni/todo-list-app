@@ -9,11 +9,12 @@ import java.util.Date;
 @Entity(tableName = "todo_table")
 public class TodoEntity {
 
-    @PrimaryKey
+    @PrimaryKey(autoGenerate = true)
     private int id;
 
     private String title;
     private String description;
+    private String category;
 
     @ColumnInfo(name = "creation_date")
     private Date creationDate;
@@ -48,6 +49,14 @@ public class TodoEntity {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public String getCategory() {
+        return category;
+    }
+
+    public void setCategory(String category) {
+        this.category = category;
     }
 
     public Date getCreationDate() {

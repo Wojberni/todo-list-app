@@ -11,11 +11,8 @@ import android.app.DatePickerDialog;
 import android.app.Dialog;
 import android.app.TimePickerDialog;
 import android.content.Intent;
-import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Environment;
-import android.provider.MediaStore;
 import android.text.format.DateFormat;
 import android.view.View;
 import android.widget.Button;
@@ -40,6 +37,7 @@ import java.nio.channels.FileChannel;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 
 public class AddTodoActivity extends AppCompatActivity implements DatePickerInterface, TimePickerInterface {
@@ -71,7 +69,7 @@ public class AddTodoActivity extends AppCompatActivity implements DatePickerInte
         setContentView(R.layout.add_todo);
 
         ActivityCompat.requestPermissions(this,
-                new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.MANAGE_EXTERNAL_STORAGE},1);
+                new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE},1);
 
         TodoDatabase todoDatabase = TodoDatabase.getInstance(this);
         todoDao = todoDatabase.getTodoDao();
@@ -146,6 +144,7 @@ public class AddTodoActivity extends AppCompatActivity implements DatePickerInte
         todoEntity.setAttachmentPath(attachmentPath);
 
         todoDao.insertTodos(todoEntity);
+
         Intent intent = new Intent(getApplicationContext(), MainActivity.class);
         startActivity(intent);
     }
@@ -158,12 +157,12 @@ public class AddTodoActivity extends AppCompatActivity implements DatePickerInte
         }
         Uri uri = data.getData();
         String sourcePath = uri.getPath();
-        File sourceFile = new File(sourcePath);
+        File sourceFile = new File(getCustomSourceFilename(sourcePath));
 
-        String formattedFilePath = uri.getLastPathSegment();
+        String formattedFilename = uri.getLastPathSegment();
 
-        String destinationFilename = getCustomFilename(formattedFilePath);
-        String destinationFolder = Environment.getExternalStorageDirectory().getAbsolutePath() + "/TodoListApp/";
+        String destinationFilename = getCustomDestinationFilename(formattedFilename);
+        String destinationFolder = getExternalFilesDir(null) + "/TodoListApp/";
         createDirIfNotExists(destinationFolder);
         File destinationFile = new File(destinationFolder + destinationFilename);
         try {
@@ -274,7 +273,7 @@ public class AddTodoActivity extends AppCompatActivity implements DatePickerInte
         }
     }
 
-    private String getCustomFilename(String filePath){
+    private String getCustomDestinationFilename(String filePath){
         int index = filePath.lastIndexOf("/");
         if(index == -1){
             return filePath;
@@ -282,6 +281,12 @@ public class AddTodoActivity extends AppCompatActivity implements DatePickerInte
         else{
             return filePath.substring(index + 1);
         }
+    }
+
+    private String getCustomSourceFilename(String filePath){
+        String[] split = filePath.split(":", 2);
+        int index = split[0].lastIndexOf("/");
+        return "/storage/" + split[0].substring(index + 1) + "/" + split[1];
     }
 
     private void createDirIfNotExists(String destination) {

@@ -15,6 +15,9 @@ public interface TodoDao {
     @Query("SELECT * FROM todo_table")
     List<TodoEntity> getAllTodos();
 
+    @Query("SELECT * FROM todo_table WHERE title LIKE :searchTerm OR description LIKE :searchTerm")
+    List<TodoEntity> getAllTodosBySearchTerm(String searchTerm);
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     void insertTodos(TodoEntity... todoEntities);
 

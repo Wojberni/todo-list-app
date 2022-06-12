@@ -3,10 +3,12 @@
   <component name="DesignSurface">
     <option name="filePathToZoomLevelMap">
       <map>
+        <entry key="../../../../layout/custom_preview.xml" value="0.1342925659472422" />
         <entry key="app/src/main/res/layout/activity_main.xml" value="0.340625" />
         <entry key="app/src/main/res/layout/add_todo.xml" value="0.3343589743589744" />
         <entry key="app/src/main/res/layout/todo_cardview.xml" value="0.5" />
         <entry key="app/src/main/res/menu/toolbar_menu.xml" value="0.1" />
+        <entry key="app/src/main/res/xml/searchable.xml" value="0.1" />
       </map>
     </option>
   </component>

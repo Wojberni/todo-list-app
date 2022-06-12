@@ -2,10 +2,12 @@ package com.example.todolistapp;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.SearchView;
 import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.app.SearchManager;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
@@ -21,6 +23,7 @@ import com.example.todolistapp.room.TodoEntity;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements ToDoViewClickListener {
@@ -63,6 +66,11 @@ public class MainActivity extends AppCompatActivity implements ToDoViewClickList
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.toolbar_menu, menu);
+
+        SearchManager searchManager = (SearchManager) getSystemService(SEARCH_SERVICE);
+        SearchView searchView = (SearchView) menu.findItem(R.id.search).getActionView();
+        searchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
+
         return true;
     }
 
@@ -97,9 +105,15 @@ public class MainActivity extends AppCompatActivity implements ToDoViewClickList
                 return true;
 
             case R.id.actionFilterByCategory:
+
                 return true;
 
             case R.id.actionSetNotificationTime:
+                return true;
+
+            case R.id.actionSortByDeadlineTime:
+                toDoTaskList.sort(Comparator.comparing(TodoEntity::getCreationDate));
+                adapter.notifyDataSetChanged();
                 return true;
 
             default:
