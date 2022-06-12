@@ -82,16 +82,8 @@ public class MainActivity extends AppCompatActivity implements ToDoViewClickList
                 updateTodoUI();
                 break;
             case R.id.cardViewEdit:
-                break;
-            case R.id.cardViewNotify:
-                toDoTaskList.get(position).setNotification(!toDoTaskList.get(position).isNotification());
-                todoDao.updateTodos(toDoTaskList.get(position));
-                updateTodoUI();
-                break;
-            case R.id.cardViewDone:
-                toDoTaskList.get(position).setDone(!toDoTaskList.get(position).isDone());
-                todoDao.updateTodos(toDoTaskList.get(position));
-                updateTodoUI();
+                Intent intent = new Intent(getApplicationContext(), EditTodoActivity.class);
+                startActivity(intent);
                 break;
             default:
                 break;

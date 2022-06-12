@@ -7,10 +7,14 @@ import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.DialogFragment;
 
 import android.Manifest;
+import android.app.AlarmManager;
 import android.app.DatePickerDialog;
 import android.app.Dialog;
+import android.app.PendingIntent;
 import android.app.TimePickerDialog;
+import android.content.ComponentName;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.text.format.DateFormat;
@@ -37,7 +41,6 @@ import java.nio.channels.FileChannel;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.List;
 import java.util.Locale;
 
 public class AddTodoActivity extends AppCompatActivity implements DatePickerInterface, TimePickerInterface {
@@ -58,10 +61,15 @@ public class AddTodoActivity extends AppCompatActivity implements DatePickerInte
     private CheckBox todoNotification;
     private CheckBox todoDone;
 
+    static final String alarmTitleExtra = "alarmTitle";
+    static final String alarmDescriptionExtra = "alarmDescription";
+    static final int notificationId = 10;
+
     private CustomDate customCreationDate;
     private CustomDate customDeadlineDate;
     private TodoDao todoDao;
     private String attachmentPath;
+    private AlarmManager alarmManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -69,7 +77,7 @@ public class AddTodoActivity extends AppCompatActivity implements DatePickerInte
         setContentView(R.layout.add_todo);
 
         ActivityCompat.requestPermissions(this,
-                new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE},1);
+                new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},1);
 
         TodoDatabase todoDatabase = TodoDatabase.getInstance(this);
         todoDao = todoDatabase.getTodoDao();
@@ -144,6 +152,30 @@ public class AddTodoActivity extends AppCompatActivity implements DatePickerInte
         todoEntity.setAttachmentPath(attachmentPath);
 
         todoDao.insertTodos(todoEntity);
+
+        alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
+        Intent alarmIntent = new Intent(this, AlarmReceiver.class);
+        alarmIntent.putExtra(alarmTitleExtra, todoTitle.getText().toString());
+        alarmIntent.putExtra(alarmDescriptionExtra, todoDescription.getText().toString());
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(this, notificationId,
+                alarmIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+        if(deadlineDate != null && todoNotification.isChecked()) {
+            alarmManager.set(AlarmManager.RTC_WAKEUP, deadlineDate.getTime(), pendingIntent);
+        }
+
+//        PendingIntent pendingIntent1 = PendingIntent.getService(this, 0,
+//                alarmIntent, PendingIntent.FLAG_NO_CREATE);
+//        alarmManager.cancel(pendingIntent1);
+
+//        ComponentName receiver = new ComponentName(this, AlarmReceiver.class);
+//        PackageManager pm = getPackageManager();
+//        pm.setComponentEnabledSetting(receiver,
+//                PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
+//                PackageManager.DONT_KILL_APP);
+//
+//        pm.setComponentEnabledSetting(receiver,
+//                PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
+//                PackageManager.DONT_KILL_APP);
 
         Intent intent = new Intent(getApplicationContext(), MainActivity.class);
         startActivity(intent);
@@ -229,7 +261,7 @@ public class AddTodoActivity extends AppCompatActivity implements DatePickerInte
 
         @Override
         public void onDateSet(DatePicker datePicker, int year, int month, int day) {
-            datePickerInterface.setCurrentDate(typeOfDate, year, month, day);
+            datePickerInterface.setCurrentDate(typeOfDate, year, month+1, day);
         }
 
     }
