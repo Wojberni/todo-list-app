@@ -47,7 +47,12 @@ public class ToDoListAdapter extends RecyclerView.Adapter<ToDoListAdapter.ToDoVi
         holder.deadlineDate.setText(simpleDateFormat.format(date));
         holder.done.setChecked(toDoTaskList.get(position).isDone());
         holder.notification.setChecked(toDoTaskList.get(position).isNotification());
-        holder.attachment.setChecked(toDoTaskList.get(position).getAttachmentPath() != null);
+        if(toDoTaskList.get(position).getAttachmentPath() != null){
+            holder.attachment.setVisibility(View.VISIBLE);
+        }
+        else{
+            holder.attachment.setVisibility(View.GONE);
+        }
     }
 
     @Override
@@ -63,7 +68,7 @@ public class ToDoListAdapter extends RecyclerView.Adapter<ToDoListAdapter.ToDoVi
         private TextView deadlineDate;
         private CheckBox done;
         private CheckBox notification;
-        private CheckBox attachment;
+        private Button attachment;
         private Button edit;
         private Button delete;
 
@@ -78,6 +83,7 @@ public class ToDoListAdapter extends RecyclerView.Adapter<ToDoListAdapter.ToDoVi
             attachment = itemView.findViewById(R.id.cardViewAttachment);
             edit = itemView.findViewById(R.id.cardViewEdit);
             delete = itemView.findViewById(R.id.cardViewDelete);
+            attachment.setOnClickListener(this);
             notification.setOnClickListener(this);
             edit.setOnClickListener(this);
             delete.setOnClickListener(this);

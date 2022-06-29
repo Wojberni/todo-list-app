@@ -3,22 +3,16 @@
     xmlns:android="http://schemas.android.com/apk/res/android" >
 
     <item android:id="@+id/search"
-        android:title="Search"
+        android:title="@string/search"
         android:icon="@android:drawable/ic_search_category_default"
         app:showAsAction="collapseActionView|ifRoom"
         app:actionViewClass="androidx.appcompat.widget.SearchView" />
 
     <item
         android:id="@+id/actionHideTodos"
-        android:title="Hide Tasks" />
-
-    <item android:id="@+id/actionFilterByCategory"
-        android:title="Filter By Category" />
+        android:title="@string/hide_tasks" />
 
     <item android:id="@+id/actionSortByDeadlineTime"
-        android:title="Filter By Category" />
-
-    <item android:id="@+id/actionSetNotificationTime"
-        android:title="Notification Time" />
+        android:title="@string/sort_by_deadline_time" />
 
 </menu>

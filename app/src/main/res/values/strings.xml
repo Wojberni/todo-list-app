@@ -2,4 +2,7 @@
     <string name="app_name">ToDoListApp</string>
     <string name="add_todo_text">ADD TODO</string>
     <string name="search_hint">Enter Todo Name…</string>
+    <string name="hide_tasks">Hide Tasks</string>
+    <string name="sort_by_deadline_time">Sort By Deadline Time</string>
+    <string name="search">Search</string>
 </resources>

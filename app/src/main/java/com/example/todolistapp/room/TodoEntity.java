@@ -4,10 +4,11 @@ import androidx.room.ColumnInfo;
 import androidx.room.Entity;
 import androidx.room.PrimaryKey;
 
+import java.io.Serializable;
 import java.util.Date;
 
 @Entity(tableName = "todo_table")
-public class TodoEntity {
+public class TodoEntity implements Serializable {
 
     @PrimaryKey(autoGenerate = true)
     private int id;

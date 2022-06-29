@@ -1,67 +1,369 @@
 package com.example.todolistapp;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.DialogFragment;
 
+import android.Manifest;
+import android.app.AlarmManager;
 import android.app.DatePickerDialog;
 import android.app.Dialog;
+import android.app.PendingIntent;
 import android.app.TimePickerDialog;
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.text.format.DateFormat;
+import android.view.View;
+import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.DatePicker;
+import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.TimePicker;
 
-import java.util.Calendar;
+import com.example.todolistapp.pickers.CustomDate;
+import com.example.todolistapp.pickers.DatePickerInterface;
+import com.example.todolistapp.pickers.TimePickerInterface;
+import com.example.todolistapp.room.TodoDao;
+import com.example.todolistapp.room.TodoDatabase;
+import com.example.todolistapp.room.TodoEntity;
 
-public class EditTodoActivity extends AppCompatActivity {
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.nio.channels.FileChannel;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.Locale;
+
+public class EditTodoActivity extends AppCompatActivity implements DatePickerInterface, TimePickerInterface {
+
+    private EditText todoTitle;
+    private EditText todoDescription;
+    private Button todoCreationDate;
+    private TextView todoCreationDateValue;
+    private Button todoCreationTime;
+    private TextView todoCreationTimeValue;
+    private Button todoDeadlineDate;
+    private TextView todoDeadlineDateValue;
+    private Button todoDeadlineTime;
+    private TextView todoDeadlineTimeValue;
+    private Button todoAttachment;
+    private TextView todoAttachmentValue;
+    private Button todoEdit;
+    private CheckBox todoNotification;
+    private CheckBox todoDone;
+
+    static final String alarmTitleExtra = "alarmTitle";
+    static final String alarmDescriptionExtra = "alarmDescription";
+    static final int notificationId = 10;
+
+    private TodoEntity todoEntity;
+    private CustomDate customCreationDate;
+    private CustomDate customDeadlineDate;
+    private TodoDao todoDao;
+    private String attachmentPath;
+    private AlarmManager alarmManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        setContentView(R.layout.add_todo);
+
+        ActivityCompat.requestPermissions(this,
+                new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},1);
+
+        todoEntity = (TodoEntity) getIntent().getSerializableExtra("todo_item");
+
+        TodoDatabase todoDatabase = TodoDatabase.getInstance(this);
+        todoDao = todoDatabase.getTodoDao();
+        customCreationDate = new CustomDate();
+        customDeadlineDate = new CustomDate();
+
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.US);
+
+        todoTitle = findViewById(R.id.addTodoInputTitle);
+        todoTitle.setText(todoEntity.getTitle());
+        todoDescription = findViewById(R.id.addTodoInputDescription);
+        todoDescription.setText(todoEntity.getDescription());
+        todoNotification = findViewById(R.id.addTodoCheckBoxNotifications);
+        todoNotification.setChecked(todoEntity.isNotification());
+        todoDone = findViewById(R.id.addTodoCheckBoxDone);
+        todoDone.setChecked(todoEntity.isDone());
+        todoCreationDate = findViewById(R.id.addTodoInputCreationDate);
+        todoCreationDateValue = findViewById(R.id.addTodoCreationDate);
+        todoCreationDateValue.setText(format.format(todoEntity.getCreationDate()));
+        todoCreationTime = findViewById(R.id.addTodoInputCreationTime);
+        todoCreationTimeValue = findViewById(R.id.addTodoCreationTime);
+        todoCreationTimeValue.setText(format.format(todoEntity.getCreationDate()));
+        todoDeadlineDate = findViewById(R.id.addTodoInputDeadlineDate);
+        todoDeadlineDateValue = findViewById(R.id.addTodoDeadlineDate);
+        todoDeadlineDateValue.setText(format.format(todoEntity.getDeadlineDate()));
+        todoDeadlineTime = findViewById(R.id.addTodoInputDeadlineTime);
+        todoDeadlineTimeValue = findViewById(R.id.addTodoDeadlineTime);
+        todoDeadlineTimeValue.setText(format.format(todoEntity.getDeadlineDate()));
+        todoAttachment = findViewById(R.id.addTodoInputAttachment);
+        todoAttachmentValue = findViewById(R.id.addTodoFilePath);
+        todoAttachmentValue.setText(todoEntity.getAttachmentPath());
+        todoEdit = findViewById(R.id.addTodoInputButton);
+        todoEdit.setText("EDIT TODO");
+        todoCreationDate.setOnClickListener(this::showDatePickerDialog);
+        todoCreationTime.setOnClickListener(this::showTimePickerDialog);
+        todoDeadlineDate.setOnClickListener(this::showDatePickerDialog);
+        todoDeadlineTime.setOnClickListener(this::showTimePickerDialog);
+        todoAttachment.setOnClickListener(this::addAttachment);
+        todoEdit.setOnClickListener(this::updateTodo);
+    }
+
+    public void showDatePickerDialog(View view) {
+        DialogFragment newFragment = new EditTodoActivity.DatePickerFragment(this, view.getId());
+        newFragment.show(getSupportFragmentManager(), "datePicker");
+    }
+
+    public void showTimePickerDialog(View view) {
+        DialogFragment newFragment = new EditTodoActivity.TimePickerFragment(this, view.getId());
+        newFragment.show(getSupportFragmentManager(), "timePicker");
+    }
+
+    public void addAttachment(View view) {
+        Intent chooseFile = new Intent(Intent.ACTION_GET_CONTENT);
+        chooseFile.setType("*/*");
+        chooseFile = Intent.createChooser(chooseFile, "Choose a file");
+        startActivityForResult(chooseFile, 0);
+    }
+
+    public void updateTodo(View view) {
+        String creationDateText = String.format(Locale.US, "%d-%d-%d %d:%d:%d", customCreationDate.getYear(),
+                customCreationDate.getMonth(), customCreationDate.getDay(),
+                customCreationDate.getHour(), customCreationDate.getMinute(), 0);
+        String deadlineDateText = String.format(Locale.US, "%d-%d-%d %d:%d:%d",
+                customDeadlineDate.getYear(), customDeadlineDate.getMonth(),
+                customDeadlineDate.getDay(), customDeadlineDate.getHour(),
+                customDeadlineDate.getMinute(), 0);
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.US);
+        Date creationDate = null;
+        Date deadlineDate = null;
+        try{
+            creationDate = format.parse(creationDateText);
+            deadlineDate = format.parse(deadlineDateText);
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
+        TodoEntity todoEntity = new TodoEntity();
+        todoEntity.setId(this.todoEntity.getId());
+        todoEntity.setTitle(todoTitle.getText().toString());
+        todoEntity.setDescription(todoDescription.getText().toString());
+        if(creationDate == null){
+            todoEntity.setCreationDate(this.todoEntity.getCreationDate());
+        }
+        else{
+            todoEntity.setCreationDate(creationDate);
+        }
+        if(deadlineDate == null){
+            todoEntity.setDeadlineDate(this.todoEntity.getDeadlineDate());
+        }
+        else{
+            todoEntity.setDeadlineDate(deadlineDate);
+        }
+        todoEntity.setNotification(todoNotification.isChecked());
+        todoEntity.setDone(todoDone.isChecked());
+        if(attachmentPath == null){
+            todoEntity.setAttachmentPath(this.todoEntity.getAttachmentPath());
+        }
+        else{
+            todoEntity.setAttachmentPath(attachmentPath);
+        }
+
+        todoDao.updateTodos(todoEntity);
+
+        alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
+        Intent alarmIntent = new Intent(this, AlarmReceiver.class);
+        alarmIntent.putExtra(alarmTitleExtra, todoTitle.getText().toString());
+        alarmIntent.putExtra(alarmDescriptionExtra, todoDescription.getText().toString());
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(this, notificationId,
+                alarmIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+        if(deadlineDate != null && todoNotification.isChecked()) {
+            alarmManager.set(AlarmManager.RTC_WAKEUP, deadlineDate.getTime(), pendingIntent);
+        }
+
+//        PendingIntent pendingIntent1 = PendingIntent.getService(this, 0,
+//                alarmIntent, PendingIntent.FLAG_NO_CREATE);
+//        alarmManager.cancel(pendingIntent1);
+
+//        ComponentName receiver = new ComponentName(this, AlarmReceiver.class);
+//        PackageManager pm = getPackageManager();
+//        pm.setComponentEnabledSetting(receiver,
+//                PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
+//                PackageManager.DONT_KILL_APP);
+//
+//        pm.setComponentEnabledSetting(receiver,
+//                PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
+//                PackageManager.DONT_KILL_APP);
+
+        Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+        startActivity(intent);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (resultCode != RESULT_OK || requestCode != 0 || data == null) {
+            return;
+        }
+        Uri uri = data.getData();
+        String sourcePath = uri.getPath();
+        File sourceFile = new File(getCustomSourceFilename(sourcePath));
+
+        String formattedFilename = uri.getLastPathSegment();
+
+        String destinationFilename = getCustomDestinationFilename(formattedFilename);
+        String destinationFolder = getExternalFilesDir(null) + "/TodoListApp/";
+        createDirIfNotExists(destinationFolder);
+        File destinationFile = new File(destinationFolder + destinationFilename);
+        try {
+            copyFile(sourceFile, destinationFile);
+            attachmentPath = destinationFolder + destinationFilename;
+            todoAttachmentValue.setText(destinationFilename);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void setCurrentDate(int typeOfDate, int year, int month, int day) {
+        if(typeOfDate == R.id.addTodoInputCreationDate){
+            this.customCreationDate.setYear(year);
+            this.customCreationDate.setMonth(month);
+            this.customCreationDate.setDay(day);
+            todoCreationDateValue.setText(String.format(Locale.US, "%d-%d-%d", year, month, day));
+        }
+        else if(typeOfDate == R.id.addTodoInputDeadlineDate){
+            this.customDeadlineDate.setYear(year);
+            this.customDeadlineDate.setMonth(month);
+            this.customDeadlineDate.setDay(day);
+            todoDeadlineDateValue.setText(String.format(Locale.US, "%d-%d-%d", year, month, day));
+        }
+
+    }
+
+    @Override
+    public void setCurrentTime(int typeOfTime, int hour, int minute) {
+        if(typeOfTime == R.id.addTodoInputCreationTime){
+            this.customCreationDate.setHour(hour);
+            this.customCreationDate.setMinute(minute);
+            todoCreationTimeValue.setText(String.format(Locale.US, "%d:%d", hour, minute));
+        }
+        else if(typeOfTime == R.id.addTodoInputDeadlineTime){
+            this.customDeadlineDate.setHour(hour);
+            this.customDeadlineDate.setMinute(minute);
+            todoDeadlineTimeValue.setText(String.format(Locale.US, "%d:%d", hour, minute));
+        }
     }
 
     public static class DatePickerFragment extends DialogFragment
             implements DatePickerDialog.OnDateSetListener {
 
+        DatePickerInterface datePickerInterface;
+        int typeOfDate;
+
+        DatePickerFragment(DatePickerInterface datePickerInterface, int typeOfDate) {
+            this.datePickerInterface = datePickerInterface;
+            this.typeOfDate = typeOfDate;
+        }
+
         @NonNull
         @Override
         public Dialog onCreateDialog(Bundle savedInstanceState) {
-            // Use the current date as the default date in the picker
             final Calendar c = Calendar.getInstance();
             int year = c.get(Calendar.YEAR);
             int month = c.get(Calendar.MONTH);
             int day = c.get(Calendar.DAY_OF_MONTH);
 
-            // Create a new instance of DatePickerDialog and return it
             return new DatePickerDialog(getActivity(), this, year, month, day);
         }
 
         @Override
-        public void onDateSet(DatePicker datePicker, int i, int i1, int i2) {
-
+        public void onDateSet(DatePicker datePicker, int year, int month, int day) {
+            datePickerInterface.setCurrentDate(typeOfDate, year, month+1, day);
         }
+
     }
 
     public static class TimePickerFragment extends DialogFragment
             implements TimePickerDialog.OnTimeSetListener {
 
+        TimePickerInterface timePickerInterface;
+        int typeOfTime;
+
+        TimePickerFragment(TimePickerInterface timePickerInterface, int typeOfTime) {
+            this.timePickerInterface = timePickerInterface;
+            this.typeOfTime = typeOfTime;
+        }
+
         @NonNull
         @Override
         public Dialog onCreateDialog(Bundle savedInstanceState) {
-            // Use the current time as the default values for the picker
             final Calendar c = Calendar.getInstance();
             int hour = c.get(Calendar.HOUR_OF_DAY);
             int minute = c.get(Calendar.MINUTE);
 
-            // Create a new instance of TimePickerDialog and return it
             return new TimePickerDialog(getActivity(), this, hour, minute,
                     DateFormat.is24HourFormat(getActivity()));
         }
 
         @Override
-        public void onTimeSet(TimePicker timePicker, int i, int i1) {
-
+        public void onTimeSet(TimePicker timePicker, int hour, int minute) {
+            timePickerInterface.setCurrentTime(typeOfTime, hour, minute);
         }
     }
+
+    private void copyFile(File source, File destination) throws IOException {
+
+        try (FileChannel in = new FileInputStream(source).getChannel();
+             FileChannel out = new FileOutputStream(destination).getChannel())
+        {
+            in.transferTo(0, in.size(), out);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private String getCustomDestinationFilename(String filePath){
+        int index = filePath.lastIndexOf("/");
+        if(index == -1){
+            return filePath;
+        }
+        else{
+            return filePath.substring(index + 1);
+        }
+    }
+
+    private String getCustomSourceFilename(String filePath){
+        String[] split = filePath.split(":", 2);
+        int index = split[0].lastIndexOf("/");
+        return "/storage/" + split[0].substring(index + 1) + "/" + split[1];
+    }
+
+    private void createDirIfNotExists(String destination) {
+
+        File folder = new File(destination);
+
+        if (!folder.isDirectory()) {
+
+            if(folder.mkdirs()){
+                System.out.println("Directory created");
+            }
+            else{
+                System.out.println("Directory not created");
+            }
+        }
+    }
+
 }

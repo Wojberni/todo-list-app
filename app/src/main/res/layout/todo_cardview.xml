@@ -62,11 +62,10 @@
         app:layout_constraintEnd_toStartOf="@+id/cardViewDone"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <CheckBox
+    <Button
         android:id="@+id/cardViewAttachment"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:clickable="false"
         android:text="Attachment"
         app:layout_constraintEnd_toStartOf="@+id/cardViewNotify"
         app:layout_constraintTop_toTopOf="parent" />
@@ -75,11 +74,11 @@
         android:id="@+id/cardViewEdit"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginEnd="16dp"
         android:text="EDIT"
+        app:layout_constraintBottom_toBottomOf="@+id/cardViewDelete"
         app:layout_constraintEnd_toStartOf="@+id/cardViewDelete"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toEndOf="@+id/cardViewTitle"
-        app:layout_constraintTop_toBottomOf="@+id/cardViewAttachment" />
+        app:layout_constraintTop_toTopOf="@+id/cardViewDelete" />
 
     <Button
         android:id="@+id/cardViewDelete"

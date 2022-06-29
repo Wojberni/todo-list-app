@@ -1,20 +1,12 @@
 package com.example.todolistapp;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
-import androidx.fragment.app.DialogFragment;
-
 import android.Manifest;
 import android.app.AlarmManager;
 import android.app.DatePickerDialog;
 import android.app.Dialog;
 import android.app.PendingIntent;
 import android.app.TimePickerDialog;
-import android.content.ComponentName;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.text.format.DateFormat;
@@ -25,6 +17,12 @@ import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.TimePicker;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.fragment.app.DialogFragment;
 
 import com.example.todolistapp.pickers.CustomDate;
 import com.example.todolistapp.pickers.DatePickerInterface;
@@ -37,7 +35,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.nio.channels.FileChannel;
+import java.io.OutputStream;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
@@ -71,10 +69,14 @@ public class AddTodoActivity extends AppCompatActivity implements DatePickerInte
     private String attachmentPath;
     private AlarmManager alarmManager;
 
+//    private AddTodoBinding binding;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.add_todo);
+//        binding = AddTodoBinding.inflate(getLayoutInflater());
+//        setContentView(binding.getRoot());
 
         ActivityCompat.requestPermissions(this,
                 new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},1);
@@ -188,8 +190,6 @@ public class AddTodoActivity extends AppCompatActivity implements DatePickerInte
             return;
         }
         Uri uri = data.getData();
-        String sourcePath = uri.getPath();
-        File sourceFile = new File(getCustomSourceFilename(sourcePath));
 
         String formattedFilename = uri.getLastPathSegment();
 
@@ -198,7 +198,8 @@ public class AddTodoActivity extends AppCompatActivity implements DatePickerInte
         createDirIfNotExists(destinationFolder);
         File destinationFile = new File(destinationFolder + destinationFilename);
         try {
-            copyFile(sourceFile, destinationFile);
+            FileInputStream inputStream = (FileInputStream) getContentResolver().openInputStream(uri);
+            copyFile(inputStream, destinationFile);
             attachmentPath = destinationFolder + destinationFilename;
             todoAttachmentValue.setText(destinationFilename);
         } catch (IOException e) {
@@ -294,12 +295,16 @@ public class AddTodoActivity extends AppCompatActivity implements DatePickerInte
         }
     }
 
-    private void copyFile(File source, File destination) throws IOException {
+    private void copyFile(FileInputStream source, File destination) throws IOException {
 
-        try (FileChannel in = new FileInputStream(source).getChannel();
-             FileChannel out = new FileOutputStream(destination).getChannel())
+        try(OutputStream output = new FileOutputStream(destination))
         {
-            in.transferTo(0, in.size(), out);
+            byte[] buffer = new byte[1024];
+            int length;
+            while ((length = source.read(buffer)) > -1) {
+                output.write(buffer, 0, length);
+            }
+            output.flush();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -313,12 +318,6 @@ public class AddTodoActivity extends AppCompatActivity implements DatePickerInte
         else{
             return filePath.substring(index + 1);
         }
-    }
-
-    private String getCustomSourceFilename(String filePath){
-        String[] split = filePath.split(":", 2);
-        int index = split[0].lastIndexOf("/");
-        return "/storage/" + split[0].substring(index + 1) + "/" + split[1];
     }
 
     private void createDirIfNotExists(String destination) {
