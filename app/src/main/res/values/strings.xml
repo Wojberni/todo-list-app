@@ -5,4 +5,18 @@
     <string name="hide_tasks">Hide Tasks</string>
     <string name="sort_by_deadline_time">Sort By Deadline Time</string>
     <string name="search">Search</string>
+    <string name="settings">SETTINGS</string>
+    <string name="insert_category_to_filter">Insert Category to filter:</string>
+    <string name="save_settings">Save Settings</string>
+    <string name="select_minutes_earlier">Select how many minutes earlier should the notification go off:</string>
+
+    <string-array name="filter_category_spinner">
+        <item>0</item>
+        <item>15</item>
+        <item>30</item>
+        <item>60</item>
+        <item>120</item>
+        <item>180</item>
+    </string-array>
+
 </resources>

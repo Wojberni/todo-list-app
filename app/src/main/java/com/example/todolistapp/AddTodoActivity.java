@@ -45,6 +45,7 @@ public class AddTodoActivity extends AppCompatActivity implements DatePickerInte
 
     private EditText todoTitle;
     private EditText todoDescription;
+    private EditText todoCategory;
     private Button todoCreationDate;
     private TextView todoCreationDateValue;
     private Button todoCreationTime;
@@ -69,14 +70,10 @@ public class AddTodoActivity extends AppCompatActivity implements DatePickerInte
     private String attachmentPath;
     private AlarmManager alarmManager;
 
-//    private AddTodoBinding binding;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.add_todo);
-//        binding = AddTodoBinding.inflate(getLayoutInflater());
-//        setContentView(binding.getRoot());
 
         ActivityCompat.requestPermissions(this,
                 new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},1);
@@ -88,6 +85,7 @@ public class AddTodoActivity extends AppCompatActivity implements DatePickerInte
 
         todoTitle = findViewById(R.id.addTodoInputTitle);
         todoDescription = findViewById(R.id.addTodoInputDescription);
+        todoCategory = findViewById(R.id.addTodoInputCategory);
         todoNotification = findViewById(R.id.addTodoCheckBoxNotifications);
         todoDone = findViewById(R.id.addTodoCheckBoxDone);
         todoCreationDate = findViewById(R.id.addTodoInputCreationDate);
@@ -147,6 +145,7 @@ public class AddTodoActivity extends AppCompatActivity implements DatePickerInte
         TodoEntity todoEntity = new TodoEntity();
         todoEntity.setTitle(todoTitle.getText().toString());
         todoEntity.setDescription(todoDescription.getText().toString());
+        todoEntity.setCategory(todoCategory.getText().toString());
         todoEntity.setCreationDate(creationDate);
         todoEntity.setDeadlineDate(deadlineDate);
         todoEntity.setNotification(todoNotification.isChecked());

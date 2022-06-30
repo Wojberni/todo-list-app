@@ -39,6 +39,7 @@ public class ToDoListAdapter extends RecyclerView.Adapter<ToDoListAdapter.ToDoVi
     public void onBindViewHolder(@NonNull ToDoListAdapter.ToDoViewHolder holder, int position) {
         holder.title.setText(toDoTaskList.get(position).getTitle());
         holder.description.setText(toDoTaskList.get(position).getDescription());
+        holder.category.setText(toDoTaskList.get(position).getCategory());
         Date date = toDoTaskList.get(position).getCreationDate();
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd-MM-yyyy HH:mm", Locale.US);
         holder.creationDate.setText(simpleDateFormat.format(date));
@@ -64,6 +65,7 @@ public class ToDoListAdapter extends RecyclerView.Adapter<ToDoListAdapter.ToDoVi
 
         private TextView title;
         private TextView description;
+        private TextView category;
         private TextView creationDate;
         private TextView deadlineDate;
         private CheckBox done;
@@ -76,6 +78,7 @@ public class ToDoListAdapter extends RecyclerView.Adapter<ToDoListAdapter.ToDoVi
             super(itemView);
             title = itemView.findViewById(R.id.cardViewTitle);
             description = itemView.findViewById(R.id.cardViewDescription);
+            category = itemView.findViewById(R.id.cardViewCategory);
             creationDate = itemView.findViewById(R.id.cardViewCreationDate);
             deadlineDate = itemView.findViewById(R.id.cardViewDeadlineDate);
             done = itemView.findViewById(R.id.cardViewDone);
@@ -85,6 +88,7 @@ public class ToDoListAdapter extends RecyclerView.Adapter<ToDoListAdapter.ToDoVi
             delete = itemView.findViewById(R.id.cardViewDelete);
             attachment.setOnClickListener(this);
             notification.setOnClickListener(this);
+            done.setOnClickListener(this);
             edit.setOnClickListener(this);
             delete.setOnClickListener(this);
         }

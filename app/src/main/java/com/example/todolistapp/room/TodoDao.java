@@ -18,7 +18,7 @@ public interface TodoDao {
     @Query("SELECT * FROM todo_table WHERE title LIKE :searchTerm OR description LIKE :searchTerm")
     List<TodoEntity> getAllTodosBySearchTerm(String searchTerm);
 
-    @Query("SELECT * FROM todo_table WHERE done = 0")
+    @Query("SELECT * FROM todo_table WHERE NOT done")
     List<TodoEntity> getAllTodosNotDone();
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)

@@ -31,16 +31,22 @@ import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements ToDoViewClickListener {
 
-    RecyclerView.Adapter<ToDoListAdapter.ToDoViewHolder> adapter;
-    ArrayList<TodoEntity> toDoTaskList;
-    TodoDao todoDao;
-    Toolbar todoToolbar;
-    private boolean hideTodos = false;
+    private RecyclerView.Adapter<ToDoListAdapter.ToDoViewHolder> adapter;
+    private ArrayList<TodoEntity> toDoTaskList;
+    private TodoDao todoDao;
+    private Toolbar todoToolbar;
+    private boolean hideTodos = true;
+    private String category;
+    private Integer notificationTime;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        Intent settings_intent = getIntent();
+        category = settings_intent.getStringExtra("settings_category");
+        notificationTime = settings_intent.getIntExtra("settings_notificationTime", -1);
 
         todoToolbar = findViewById(R.id.todoToolbar);
         setSupportActionBar(todoToolbar);
@@ -50,6 +56,9 @@ public class MainActivity extends AppCompatActivity implements ToDoViewClickList
 
         List<TodoEntity> todoEntities = todoDao.getAllTodos();
         toDoTaskList = new ArrayList<>(todoEntities);
+        if(category != null && !category.isEmpty()) {
+            toDoTaskList = filterTodos(toDoTaskList, category);
+        }
 
         RecyclerView recyclerView = findViewById(R.id.recyclerView);
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this);
@@ -58,9 +67,17 @@ public class MainActivity extends AppCompatActivity implements ToDoViewClickList
         adapter = new ToDoListAdapter(toDoTaskList, this);
         recyclerView.setAdapter(adapter);
 
-        FloatingActionButton fab = findViewById(R.id.floatingAddTodoButton);
-        fab.setOnClickListener(view -> {
+        FloatingActionButton addToDoButton = findViewById(R.id.floatingAddTodoButton);
+        addToDoButton.setOnClickListener(view -> {
             Intent intent = new Intent(getApplicationContext(), AddTodoActivity.class);
+            startActivity(intent);
+        });
+
+        FloatingActionButton settingsButton = findViewById(R.id.floatingSettingsButton);
+        settingsButton.setOnClickListener(view -> {
+            Intent intent = new Intent(getApplicationContext(), SettingsActivity.class);
+            intent.putExtra("settings_category", category);
+            intent.putExtra("settings_notificationTime", notificationTime);
             startActivity(intent);
         });
 
@@ -69,6 +86,7 @@ public class MainActivity extends AppCompatActivity implements ToDoViewClickList
             String query = intent.getStringExtra(SearchManager.QUERY);
             toDoTaskList.clear();
             toDoTaskList.addAll(todoDao.getAllTodosBySearchTerm(query));
+            toDoTaskList = filterTodos(toDoTaskList, category);
             adapter.notifyDataSetChanged();
         }
 
@@ -102,6 +120,16 @@ public class MainActivity extends AppCompatActivity implements ToDoViewClickList
             case R.id.cardViewAttachment:
                 previewFile(toDoTaskList.get(position).getAttachmentPath());
                 break;
+            case R.id.cardViewDone:
+                toDoTaskList.get(position).setDone(!toDoTaskList.get(position).isDone());
+                todoDao.updateTodos(toDoTaskList.get(position));
+                updateTodoUI();
+                break;
+            case R.id.cardViewNotify:
+                toDoTaskList.get(position).setNotification(!toDoTaskList.get(position).isNotification());
+                todoDao.updateTodos(toDoTaskList.get(position));
+                updateTodoUI();
+                break;
             default:
                 break;
         }
@@ -111,21 +139,22 @@ public class MainActivity extends AppCompatActivity implements ToDoViewClickList
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId()) {
             case R.id.actionHideTodos:
-                if(hideTodos){
-                    hideTodos = false;
+                if(!hideTodos){
                     toDoTaskList.clear();
                     toDoTaskList.addAll(todoDao.getAllTodos());
                 }
                 else{
-                    hideTodos = true;
                     toDoTaskList.clear();
                     toDoTaskList.addAll(todoDao.getAllTodosNotDone());
                 }
+                hideTodos = !hideTodos;
+                toDoTaskList = filterTodos(toDoTaskList, category);
                 adapter.notifyDataSetChanged();
                 return true;
 
             case R.id.actionSortByDeadlineTime:
                 toDoTaskList.sort(Comparator.comparing(TodoEntity::getCreationDate));
+                toDoTaskList = filterTodos(toDoTaskList, category);
                 adapter.notifyDataSetChanged();
                 return true;
 
@@ -136,14 +165,15 @@ public class MainActivity extends AppCompatActivity implements ToDoViewClickList
 
     }
 
-    public void updateTodoUI(){
+    private void updateTodoUI(){
         List<TodoEntity> todoEntities = todoDao.getAllTodos();
         toDoTaskList.clear();
         toDoTaskList.addAll(todoEntities);
+        toDoTaskList = filterTodos(toDoTaskList, category);
         adapter.notifyDataSetChanged();
     }
 
-    public void previewFile(String filePath){
+    private void previewFile(String filePath){
         File file = new File(filePath);
 
         Uri uri = FileProvider.getUriForFile(this, BuildConfig.APPLICATION_ID + ".file_provider", file);
@@ -154,5 +184,14 @@ public class MainActivity extends AppCompatActivity implements ToDoViewClickList
         intent.setDataAndType(uri, mime);
         intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
         startActivity(intent);
+    }
+
+    private ArrayList<TodoEntity> filterTodos(ArrayList<TodoEntity> todoEntities, String category){
+        if(category == null || category.isEmpty()){
+            return todoEntities;
+        }
+        return todoEntities.stream()
+                .filter(todoEntity -> todoEntity.getCategory().equals(category))
+                .collect(ArrayList::new, ArrayList::add, ArrayList::addAll);
     }
 }

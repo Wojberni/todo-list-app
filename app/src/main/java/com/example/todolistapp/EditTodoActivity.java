@@ -43,8 +43,10 @@ import java.util.Locale;
 
 public class EditTodoActivity extends AppCompatActivity implements DatePickerInterface, TimePickerInterface {
 
+    private TextView todoEditText;
     private EditText todoTitle;
     private EditText todoDescription;
+    private EditText todoCategory;
     private Button todoCreationDate;
     private TextView todoCreationDateValue;
     private Button todoCreationTime;
@@ -88,10 +90,14 @@ public class EditTodoActivity extends AppCompatActivity implements DatePickerInt
 
         SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.US);
 
+        todoEditText = findViewById(R.id.addTodoText);
+        todoEditText.setText("EDIT TODO");
         todoTitle = findViewById(R.id.addTodoInputTitle);
         todoTitle.setText(todoEntity.getTitle());
         todoDescription = findViewById(R.id.addTodoInputDescription);
         todoDescription.setText(todoEntity.getDescription());
+        todoCategory = findViewById(R.id.addTodoInputCategory);
+        todoCategory.setText(todoEntity.getCategory());
         todoNotification = findViewById(R.id.addTodoCheckBoxNotifications);
         todoNotification.setChecked(todoEntity.isNotification());
         todoDone = findViewById(R.id.addTodoCheckBoxDone);
@@ -160,6 +166,7 @@ public class EditTodoActivity extends AppCompatActivity implements DatePickerInt
         todoEntity.setId(this.todoEntity.getId());
         todoEntity.setTitle(todoTitle.getText().toString());
         todoEntity.setDescription(todoDescription.getText().toString());
+        todoEntity.setCategory(todoCategory.getText().toString());
         if(creationDate == null){
             todoEntity.setCreationDate(this.todoEntity.getCreationDate());
         }

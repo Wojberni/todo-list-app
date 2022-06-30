@@ -4,8 +4,7 @@
     package="com.example.todolistapp">
 
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
-
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
     <application
         android:allowBackup="true"
@@ -18,6 +17,9 @@
         android:theme="@style/Theme.ToDoListApp"
         tools:targetApi="31">
         <activity
+            android:name=".SettingsActivity"
+            android:exported="false" />
+        <activity
             android:name=".EditTodoActivity"
             android:exported="false" />
         <activity
@@ -29,11 +31,13 @@
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <action android:name="android.intent.action.SEARCH" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-            <meta-data android:name="android.app.searchable"
-                android:resource="@xml/searchable" />
 
+            <meta-data
+                android:name="android.app.searchable"
+                android:resource="@xml/searchable" />
         </activity>
 
         <provider
@@ -46,14 +50,15 @@
                 android:resource="@xml/provider_paths" />
         </provider>
 
-        <receiver android:name=".AlarmReceiver"
-            android:exported="false"
-            android:enabled="false">
-<!--            <intent-filter>-->
-<!--                <action android:name="android.intent.action.BOOT_COMPLETED"></action>-->
-<!--            </intent-filter>-->
-        </receiver>
+        <receiver
+            android:name=".AlarmReceiver"
+            android:enabled="false"
+            android:exported="false">
 
+            <!-- <intent-filter> -->
+            <!-- <action android:name="android.intent.action.BOOT_COMPLETED"></action> -->
+            <!-- </intent-filter> -->
+        </receiver>
     </application>
 
 </manifest>

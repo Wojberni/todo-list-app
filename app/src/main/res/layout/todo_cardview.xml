@@ -10,7 +10,6 @@
         android:id="@+id/cardViewTitle"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:text="TextView"
         android:textSize="20sp"
         app:layout_constraintEnd_toStartOf="@+id/cardViewAttachment"
         app:layout_constraintStart_toStartOf="parent"
@@ -20,7 +19,6 @@
         android:id="@+id/cardViewDescription"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:text="TextView"
         android:textSize="20sp"
         app:layout_constraintEnd_toStartOf="@+id/cardViewAttachment"
         app:layout_constraintStart_toStartOf="parent"
@@ -30,7 +28,6 @@
         android:id="@+id/cardViewCreationDate"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:text="TextView"
         android:textSize="20sp"
         app:layout_constraintEnd_toStartOf="@+id/cardViewEdit"
         app:layout_constraintStart_toStartOf="parent"
@@ -40,11 +37,19 @@
         android:id="@+id/cardViewDeadlineDate"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:text="TextView"
         android:textSize="20sp"
         app:layout_constraintEnd_toStartOf="@+id/cardViewEdit"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/cardViewCreationDate" />
+
+    <TextView
+        android:id="@+id/cardViewCategory"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:textSize="20sp"
+        app:layout_constraintEnd_toEndOf="@+id/cardViewDeadlineDate"
+        app:layout_constraintStart_toStartOf="@+id/cardViewDeadlineDate"
+        app:layout_constraintTop_toBottomOf="@+id/cardViewDeadlineDate" />
 
     <CheckBox
         android:id="@+id/cardViewDone"
