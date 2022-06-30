@@ -1,16 +1,8 @@
 package com.example.todolistapp;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
-import androidx.fragment.app.DialogFragment;
-
 import android.Manifest;
-import android.app.AlarmManager;
 import android.app.DatePickerDialog;
 import android.app.Dialog;
-import android.app.PendingIntent;
 import android.app.TimePickerDialog;
 import android.content.Intent;
 import android.net.Uri;
@@ -24,6 +16,13 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.TimePicker;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.fragment.app.DialogFragment;
+
+import com.example.todolistapp.notifications.ScheduleNotification;
 import com.example.todolistapp.pickers.CustomDate;
 import com.example.todolistapp.pickers.DatePickerInterface;
 import com.example.todolistapp.pickers.TimePickerInterface;
@@ -61,16 +60,11 @@ public class EditTodoActivity extends AppCompatActivity implements DatePickerInt
     private CheckBox todoNotification;
     private CheckBox todoDone;
 
-    static final String alarmTitleExtra = "alarmTitle";
-    static final String alarmDescriptionExtra = "alarmDescription";
-    static final int notificationId = 10;
-
     private TodoEntity todoEntity;
     private CustomDate customCreationDate;
     private CustomDate customDeadlineDate;
     private TodoDao todoDao;
     private String attachmentPath;
-    private AlarmManager alarmManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -83,12 +77,31 @@ public class EditTodoActivity extends AppCompatActivity implements DatePickerInt
 
         todoEntity = (TodoEntity) getIntent().getSerializableExtra("todo_item");
 
+        ScheduleNotification.createNotificationsChannel(this);
+
         TodoDatabase todoDatabase = TodoDatabase.getInstance(this);
         todoDao = todoDatabase.getTodoDao();
         customCreationDate = new CustomDate();
         customDeadlineDate = new CustomDate();
 
-        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.US);
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(todoEntity.getCreationDate());
+
+        customCreationDate.setYear(cal.get(Calendar.YEAR));
+        customCreationDate.setMonth(cal.get(Calendar.MONTH));
+        customCreationDate.setDay(cal.get(Calendar.DAY_OF_MONTH));
+        customCreationDate.setHour(cal.get(Calendar.HOUR_OF_DAY));
+        customCreationDate.setMinute(cal.get(Calendar.MINUTE));
+
+        cal.setTime(todoEntity.getDeadlineDate());
+        customDeadlineDate.setYear(cal.get(Calendar.YEAR));
+        customDeadlineDate.setMonth(cal.get(Calendar.MONTH));
+        customDeadlineDate.setDay(cal.get(Calendar.DAY_OF_MONTH));
+        customDeadlineDate.setHour(cal.get(Calendar.HOUR_OF_DAY));
+        customDeadlineDate.setMinute(cal.get(Calendar.MINUTE));
+
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.US);
+        SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm", Locale.US);
 
         todoEditText = findViewById(R.id.addTodoText);
         todoEditText.setText("EDIT TODO");
@@ -104,16 +117,16 @@ public class EditTodoActivity extends AppCompatActivity implements DatePickerInt
         todoDone.setChecked(todoEntity.isDone());
         todoCreationDate = findViewById(R.id.addTodoInputCreationDate);
         todoCreationDateValue = findViewById(R.id.addTodoCreationDate);
-        todoCreationDateValue.setText(format.format(todoEntity.getCreationDate()));
+        todoCreationDateValue.setText(dateFormat.format(todoEntity.getCreationDate()));
         todoCreationTime = findViewById(R.id.addTodoInputCreationTime);
         todoCreationTimeValue = findViewById(R.id.addTodoCreationTime);
-        todoCreationTimeValue.setText(format.format(todoEntity.getCreationDate()));
+        todoCreationTimeValue.setText(timeFormat.format(todoEntity.getCreationDate()));
         todoDeadlineDate = findViewById(R.id.addTodoInputDeadlineDate);
         todoDeadlineDateValue = findViewById(R.id.addTodoDeadlineDate);
-        todoDeadlineDateValue.setText(format.format(todoEntity.getDeadlineDate()));
+        todoDeadlineDateValue.setText(dateFormat.format(todoEntity.getDeadlineDate()));
         todoDeadlineTime = findViewById(R.id.addTodoInputDeadlineTime);
         todoDeadlineTimeValue = findViewById(R.id.addTodoDeadlineTime);
-        todoDeadlineTimeValue.setText(format.format(todoEntity.getDeadlineDate()));
+        todoDeadlineTimeValue.setText(timeFormat.format(todoEntity.getDeadlineDate()));
         todoAttachment = findViewById(R.id.addTodoInputAttachment);
         todoAttachmentValue = findViewById(R.id.addTodoFilePath);
         todoAttachmentValue.setText(todoEntity.getAttachmentPath());
@@ -188,31 +201,15 @@ public class EditTodoActivity extends AppCompatActivity implements DatePickerInt
             todoEntity.setAttachmentPath(attachmentPath);
         }
 
-        todoDao.updateTodos(todoEntity);
+        int updatedRows = todoDao.updateTodos(todoEntity);
 
-        alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
-        Intent alarmIntent = new Intent(this, AlarmReceiver.class);
-        alarmIntent.putExtra(alarmTitleExtra, todoTitle.getText().toString());
-        alarmIntent.putExtra(alarmDescriptionExtra, todoDescription.getText().toString());
-        PendingIntent pendingIntent = PendingIntent.getBroadcast(this, notificationId,
-                alarmIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-        if(deadlineDate != null && todoNotification.isChecked()) {
-            alarmManager.set(AlarmManager.RTC_WAKEUP, deadlineDate.getTime(), pendingIntent);
+        int insertedIndexInt = (int) todoEntity.getId();
+
+        if(deadlineDate != null && todoNotification.isChecked() && updatedRows > 0) {
+            ScheduleNotification.cancelNotification(this, insertedIndexInt);
+            ScheduleNotification.createNotification(this, (int) todoEntity.getId(),
+                    todoEntity.getTitle(), todoEntity.getDescription(), todoEntity.getDeadlineDate());
         }
-
-//        PendingIntent pendingIntent1 = PendingIntent.getService(this, 0,
-//                alarmIntent, PendingIntent.FLAG_NO_CREATE);
-//        alarmManager.cancel(pendingIntent1);
-
-//        ComponentName receiver = new ComponentName(this, AlarmReceiver.class);
-//        PackageManager pm = getPackageManager();
-//        pm.setComponentEnabledSetting(receiver,
-//                PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
-//                PackageManager.DONT_KILL_APP);
-//
-//        pm.setComponentEnabledSetting(receiver,
-//                PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
-//                PackageManager.DONT_KILL_APP);
 
         Intent intent = new Intent(getApplicationContext(), MainActivity.class);
         startActivity(intent);
@@ -249,13 +246,13 @@ public class EditTodoActivity extends AppCompatActivity implements DatePickerInt
             this.customCreationDate.setYear(year);
             this.customCreationDate.setMonth(month);
             this.customCreationDate.setDay(day);
-            todoCreationDateValue.setText(String.format(Locale.US, "%d-%d-%d", year, month, day));
+            todoCreationDateValue.setText(String.format(Locale.US, "%04d-%02d-%02d", year, month, day));
         }
         else if(typeOfDate == R.id.addTodoInputDeadlineDate){
             this.customDeadlineDate.setYear(year);
             this.customDeadlineDate.setMonth(month);
             this.customDeadlineDate.setDay(day);
-            todoDeadlineDateValue.setText(String.format(Locale.US, "%d-%d-%d", year, month, day));
+            todoDeadlineDateValue.setText(String.format(Locale.US, "%04d-%02d-%02d", year, month, day));
         }
 
     }
@@ -265,12 +262,12 @@ public class EditTodoActivity extends AppCompatActivity implements DatePickerInt
         if(typeOfTime == R.id.addTodoInputCreationTime){
             this.customCreationDate.setHour(hour);
             this.customCreationDate.setMinute(minute);
-            todoCreationTimeValue.setText(String.format(Locale.US, "%d:%d", hour, minute));
+            todoCreationTimeValue.setText(String.format(Locale.US, "%02d:%02d", hour, minute));
         }
         else if(typeOfTime == R.id.addTodoInputDeadlineTime){
             this.customDeadlineDate.setHour(hour);
             this.customDeadlineDate.setMinute(minute);
-            todoDeadlineTimeValue.setText(String.format(Locale.US, "%d:%d", hour, minute));
+            todoDeadlineTimeValue.setText(String.format(Locale.US, "%02d:%02d", hour, minute));
         }
     }
 

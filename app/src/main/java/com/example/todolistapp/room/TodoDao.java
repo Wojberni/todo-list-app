@@ -22,10 +22,10 @@ public interface TodoDao {
     List<TodoEntity> getAllTodosNotDone();
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    void insertTodos(TodoEntity... todoEntities);
+    List<Long> insertTodos(TodoEntity... todoEntities);
 
     @Update
-    void updateTodos(TodoEntity... todoEntities);
+    int updateTodos(TodoEntity... todoEntities);
 
     @Delete
     void deleteTodos(TodoEntity... todoEntities);

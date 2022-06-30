@@ -31,7 +31,6 @@
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <action android:name="android.intent.action.SEARCH" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
 
@@ -51,8 +50,8 @@
         </provider>
 
         <receiver
-            android:name=".AlarmReceiver"
-            android:enabled="false"
+            android:name=".notifications.AlarmReceiver"
+            android:enabled="true"
             android:exported="false">
 
             <!-- <intent-filter> -->

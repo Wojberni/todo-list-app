@@ -19,6 +19,7 @@ import android.view.View;
 
 import com.example.todolistapp.adapter.ToDoListAdapter;
 import com.example.todolistapp.adapter.ToDoViewClickListener;
+import com.example.todolistapp.notifications.ScheduleNotification;
 import com.example.todolistapp.room.TodoDao;
 import com.example.todolistapp.room.TodoDatabase;
 import com.example.todolistapp.room.TodoEntity;
@@ -26,7 +27,9 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements ToDoViewClickListener {
@@ -47,6 +50,7 @@ public class MainActivity extends AppCompatActivity implements ToDoViewClickList
         Intent settings_intent = getIntent();
         category = settings_intent.getStringExtra("settings_category");
         notificationTime = settings_intent.getIntExtra("settings_notificationTime", -1);
+        ScheduleNotification.createNotificationsChannel(this);
 
         todoToolbar = findViewById(R.id.todoToolbar);
         setSupportActionBar(todoToolbar);
@@ -109,6 +113,7 @@ public class MainActivity extends AppCompatActivity implements ToDoViewClickList
     public void onClick(View view, int position) {
         switch (view.getId()){
             case R.id.cardViewDelete:
+                ScheduleNotification.cancelNotification(this, (int) toDoTaskList.get(position).getId());
                 todoDao.deleteTodos(toDoTaskList.get(position));
                 updateTodoUI();
                 break;
@@ -126,6 +131,20 @@ public class MainActivity extends AppCompatActivity implements ToDoViewClickList
                 updateTodoUI();
                 break;
             case R.id.cardViewNotify:
+                if(toDoTaskList.get(position).isNotification()) {
+                    ScheduleNotification.cancelNotification(this, (int) toDoTaskList.get(position).getId());
+                } else {
+                    Date date = toDoTaskList.get(position).getDeadlineDate();
+                    if(notificationTime != null && notificationTime != -1) {
+                        date = subtractHours(date, notificationTime);
+                    }
+                    ScheduleNotification.createNotification(
+                            this,
+                            (int) toDoTaskList.get(position).getId(),
+                            toDoTaskList.get(position).getTitle(),
+                            toDoTaskList.get(position).getDescription(),
+                            date);
+                }
                 toDoTaskList.get(position).setNotification(!toDoTaskList.get(position).isNotification());
                 todoDao.updateTodos(toDoTaskList.get(position));
                 updateTodoUI();
@@ -193,5 +212,12 @@ public class MainActivity extends AppCompatActivity implements ToDoViewClickList
         return todoEntities.stream()
                 .filter(todoEntity -> todoEntity.getCategory().equals(category))
                 .collect(ArrayList::new, ArrayList::add, ArrayList::addAll);
+    }
+
+    private Date subtractHours(Date date, int hours){
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(date);
+        cal.add(Calendar.HOUR, -hours);
+        return cal.getTime();
     }
 }

@@ -4,10 +4,14 @@ import android.Manifest;
 import android.app.AlarmManager;
 import android.app.DatePickerDialog;
 import android.app.Dialog;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.TimePickerDialog;
+import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.text.format.DateFormat;
 import android.view.View;
@@ -24,6 +28,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.DialogFragment;
 
+import com.example.todolistapp.notifications.AlarmReceiver;
+import com.example.todolistapp.notifications.ScheduleNotification;
 import com.example.todolistapp.pickers.CustomDate;
 import com.example.todolistapp.pickers.DatePickerInterface;
 import com.example.todolistapp.pickers.TimePickerInterface;
@@ -39,6 +45,7 @@ import java.io.OutputStream;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 
 public class AddTodoActivity extends AppCompatActivity implements DatePickerInterface, TimePickerInterface {
@@ -60,20 +67,17 @@ public class AddTodoActivity extends AppCompatActivity implements DatePickerInte
     private CheckBox todoNotification;
     private CheckBox todoDone;
 
-    static final String alarmTitleExtra = "alarmTitle";
-    static final String alarmDescriptionExtra = "alarmDescription";
-    static final int notificationId = 10;
-
     private CustomDate customCreationDate;
     private CustomDate customDeadlineDate;
     private TodoDao todoDao;
     private String attachmentPath;
-    private AlarmManager alarmManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.add_todo);
+
+        ScheduleNotification.createNotificationsChannel(this);
 
         ActivityCompat.requestPermissions(this,
                 new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},1);
@@ -152,32 +156,14 @@ public class AddTodoActivity extends AppCompatActivity implements DatePickerInte
         todoEntity.setDone(todoDone.isChecked());
         todoEntity.setAttachmentPath(attachmentPath);
 
-        todoDao.insertTodos(todoEntity);
+        List<Long> insertedIndex = todoDao.insertTodos(todoEntity);
+        int insertedIndexInt = insertedIndex.get(0).intValue();
 
-        alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
-        Intent alarmIntent = new Intent(this, AlarmReceiver.class);
-        alarmIntent.putExtra(alarmTitleExtra, todoTitle.getText().toString());
-        alarmIntent.putExtra(alarmDescriptionExtra, todoDescription.getText().toString());
-        PendingIntent pendingIntent = PendingIntent.getBroadcast(this, notificationId,
-                alarmIntent, PendingIntent.FLAG_UPDATE_CURRENT);
         if(deadlineDate != null && todoNotification.isChecked()) {
-            alarmManager.set(AlarmManager.RTC_WAKEUP, deadlineDate.getTime(), pendingIntent);
+            ScheduleNotification.createNotification(this, insertedIndexInt,
+                    todoTitle.getText().toString(),
+                    todoDescription.getText().toString(), deadlineDate);
         }
-
-//        PendingIntent pendingIntent1 = PendingIntent.getService(this, 0,
-//                alarmIntent, PendingIntent.FLAG_NO_CREATE);
-//        alarmManager.cancel(pendingIntent1);
-
-//        ComponentName receiver = new ComponentName(this, AlarmReceiver.class);
-//        PackageManager pm = getPackageManager();
-//        pm.setComponentEnabledSetting(receiver,
-//                PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
-//                PackageManager.DONT_KILL_APP);
-//
-//        pm.setComponentEnabledSetting(receiver,
-//                PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
-//                PackageManager.DONT_KILL_APP);
-
         Intent intent = new Intent(getApplicationContext(), MainActivity.class);
         startActivity(intent);
     }
@@ -212,13 +198,13 @@ public class AddTodoActivity extends AppCompatActivity implements DatePickerInte
             this.customCreationDate.setYear(year);
             this.customCreationDate.setMonth(month);
             this.customCreationDate.setDay(day);
-            todoCreationDateValue.setText(String.format(Locale.US, "%d-%d-%d", year, month, day));
+            todoCreationDateValue.setText(String.format(Locale.US, "%04d-%02d-%02d", year, month, day));
         }
         else if(typeOfDate == R.id.addTodoInputDeadlineDate){
             this.customDeadlineDate.setYear(year);
             this.customDeadlineDate.setMonth(month);
             this.customDeadlineDate.setDay(day);
-            todoDeadlineDateValue.setText(String.format(Locale.US, "%d-%d-%d", year, month, day));
+            todoDeadlineDateValue.setText(String.format(Locale.US, "%04d-%02d-%02d", year, month, day));
         }
 
     }
@@ -228,12 +214,12 @@ public class AddTodoActivity extends AppCompatActivity implements DatePickerInte
         if(typeOfTime == R.id.addTodoInputCreationTime){
             this.customCreationDate.setHour(hour);
             this.customCreationDate.setMinute(minute);
-            todoCreationTimeValue.setText(String.format(Locale.US, "%d:%d", hour, minute));
+            todoCreationTimeValue.setText(String.format(Locale.US, "%02d:%02d", hour, minute));
         }
         else if(typeOfTime == R.id.addTodoInputDeadlineTime){
             this.customDeadlineDate.setHour(hour);
             this.customDeadlineDate.setMinute(minute);
-            todoDeadlineTimeValue.setText(String.format(Locale.US, "%d:%d", hour, minute));
+            todoDeadlineTimeValue.setText(String.format(Locale.US, "%02d:%02d", hour, minute));
         }
     }
 
