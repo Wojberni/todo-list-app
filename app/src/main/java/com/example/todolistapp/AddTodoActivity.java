@@ -71,6 +71,7 @@ public class AddTodoActivity extends AppCompatActivity implements DatePickerInte
     private CustomDate customDeadlineDate;
     private TodoDao todoDao;
     private String attachmentPath;
+    private ScheduleNotification scheduleNotification;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -78,6 +79,7 @@ public class AddTodoActivity extends AppCompatActivity implements DatePickerInte
         setContentView(R.layout.add_todo);
 
         ScheduleNotification.createNotificationsChannel(this);
+        scheduleNotification = ScheduleNotification.getInstance();
 
         ActivityCompat.requestPermissions(this,
                 new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},1);
@@ -160,7 +162,7 @@ public class AddTodoActivity extends AppCompatActivity implements DatePickerInte
         int insertedIndexInt = insertedIndex.get(0).intValue();
 
         if(deadlineDate != null && todoNotification.isChecked()) {
-            ScheduleNotification.createNotification(this, insertedIndexInt,
+            scheduleNotification.createNotification(this, insertedIndexInt,
                     todoTitle.getText().toString(),
                     todoDescription.getText().toString(), deadlineDate);
         }

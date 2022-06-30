@@ -40,7 +40,7 @@ public class MainActivity extends AppCompatActivity implements ToDoViewClickList
     private Toolbar todoToolbar;
     private boolean hideTodos = true;
     private String category;
-    private Integer notificationTime;
+    private ScheduleNotification scheduleNotification;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,8 +49,8 @@ public class MainActivity extends AppCompatActivity implements ToDoViewClickList
 
         Intent settings_intent = getIntent();
         category = settings_intent.getStringExtra("settings_category");
-        notificationTime = settings_intent.getIntExtra("settings_notificationTime", -1);
         ScheduleNotification.createNotificationsChannel(this);
+        scheduleNotification = ScheduleNotification.getInstance();
 
         todoToolbar = findViewById(R.id.todoToolbar);
         setSupportActionBar(todoToolbar);
@@ -81,7 +81,6 @@ public class MainActivity extends AppCompatActivity implements ToDoViewClickList
         settingsButton.setOnClickListener(view -> {
             Intent intent = new Intent(getApplicationContext(), SettingsActivity.class);
             intent.putExtra("settings_category", category);
-            intent.putExtra("settings_notificationTime", notificationTime);
             startActivity(intent);
         });
 
@@ -113,7 +112,7 @@ public class MainActivity extends AppCompatActivity implements ToDoViewClickList
     public void onClick(View view, int position) {
         switch (view.getId()){
             case R.id.cardViewDelete:
-                ScheduleNotification.cancelNotification(this, (int) toDoTaskList.get(position).getId());
+                scheduleNotification.cancelNotification(this, (int) toDoTaskList.get(position).getId());
                 todoDao.deleteTodos(toDoTaskList.get(position));
                 updateTodoUI();
                 break;
@@ -132,18 +131,14 @@ public class MainActivity extends AppCompatActivity implements ToDoViewClickList
                 break;
             case R.id.cardViewNotify:
                 if(toDoTaskList.get(position).isNotification()) {
-                    ScheduleNotification.cancelNotification(this, (int) toDoTaskList.get(position).getId());
+                    scheduleNotification.cancelNotification(this, (int) toDoTaskList.get(position).getId());
                 } else {
-                    Date date = toDoTaskList.get(position).getDeadlineDate();
-                    if(notificationTime != null && notificationTime != -1) {
-                        date = subtractHours(date, notificationTime);
-                    }
-                    ScheduleNotification.createNotification(
+                    scheduleNotification.createNotification(
                             this,
                             (int) toDoTaskList.get(position).getId(),
                             toDoTaskList.get(position).getTitle(),
                             toDoTaskList.get(position).getDescription(),
-                            date);
+                            toDoTaskList.get(position).getDeadlineDate());
                 }
                 toDoTaskList.get(position).setNotification(!toDoTaskList.get(position).isNotification());
                 todoDao.updateTodos(toDoTaskList.get(position));
@@ -212,12 +207,5 @@ public class MainActivity extends AppCompatActivity implements ToDoViewClickList
         return todoEntities.stream()
                 .filter(todoEntity -> todoEntity.getCategory().equals(category))
                 .collect(ArrayList::new, ArrayList::add, ArrayList::addAll);
-    }
-
-    private Date subtractHours(Date date, int hours){
-        Calendar cal = Calendar.getInstance();
-        cal.setTime(date);
-        cal.add(Calendar.HOUR, -hours);
-        return cal.getTime();
     }
 }

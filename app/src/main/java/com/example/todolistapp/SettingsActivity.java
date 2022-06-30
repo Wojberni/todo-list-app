@@ -11,6 +11,8 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Spinner;
 
+import com.example.todolistapp.notifications.ScheduleNotification;
+
 public class SettingsActivity extends AppCompatActivity implements AdapterView.OnItemSelectedListener {
 
     private EditText filterCategory;
@@ -18,6 +20,7 @@ public class SettingsActivity extends AppCompatActivity implements AdapterView.O
     private Spinner notificationTimeSpinner;
     private Integer notificationTime;
     private String category;
+    private ScheduleNotification scheduleNotification;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -26,7 +29,8 @@ public class SettingsActivity extends AppCompatActivity implements AdapterView.O
 
         Intent settings_intent = getIntent();
         category = settings_intent.getStringExtra("settings_category");
-        notificationTime = settings_intent.getIntExtra("settings_notificationTime", -1);
+        scheduleNotification = ScheduleNotification.getInstance();
+        notificationTime = scheduleNotification.getNotificationOffset();
 
         filterCategory = findViewById(R.id.settingsFilterInput);
         saveSettingsButton = findViewById(R.id.settingsSaveButton);
@@ -42,15 +46,14 @@ public class SettingsActivity extends AppCompatActivity implements AdapterView.O
         if(category != null && !category.isEmpty()) {
             filterCategory.setText(category);
         }
-        if(notificationTime != -1) {
-            notificationTimeSpinner.setSelection(adapter.getPosition(notificationTime.toString()));
-        }
+
+        notificationTimeSpinner.setSelection(adapter.getPosition(notificationTime.toString()));
 
         saveSettingsButton.setOnClickListener(v -> {
             category = filterCategory.getText().toString();
             Intent intent = new Intent(getApplicationContext(), MainActivity.class);
             intent.putExtra("settings_category", category);
-            intent.putExtra("settings_notificationTime", notificationTime);
+            scheduleNotification.setNotificationOffset(notificationTime);
             startActivity(intent);
         });
     }

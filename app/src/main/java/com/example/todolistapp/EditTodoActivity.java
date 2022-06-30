@@ -65,6 +65,7 @@ public class EditTodoActivity extends AppCompatActivity implements DatePickerInt
     private CustomDate customDeadlineDate;
     private TodoDao todoDao;
     private String attachmentPath;
+    private ScheduleNotification scheduleNotification;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -78,6 +79,7 @@ public class EditTodoActivity extends AppCompatActivity implements DatePickerInt
         todoEntity = (TodoEntity) getIntent().getSerializableExtra("todo_item");
 
         ScheduleNotification.createNotificationsChannel(this);
+        scheduleNotification = ScheduleNotification.getInstance();
 
         TodoDatabase todoDatabase = TodoDatabase.getInstance(this);
         todoDao = todoDatabase.getTodoDao();
@@ -88,14 +90,14 @@ public class EditTodoActivity extends AppCompatActivity implements DatePickerInt
         cal.setTime(todoEntity.getCreationDate());
 
         customCreationDate.setYear(cal.get(Calendar.YEAR));
-        customCreationDate.setMonth(cal.get(Calendar.MONTH));
+        customCreationDate.setMonth(cal.get(Calendar.MONTH)+1);
         customCreationDate.setDay(cal.get(Calendar.DAY_OF_MONTH));
         customCreationDate.setHour(cal.get(Calendar.HOUR_OF_DAY));
         customCreationDate.setMinute(cal.get(Calendar.MINUTE));
 
         cal.setTime(todoEntity.getDeadlineDate());
         customDeadlineDate.setYear(cal.get(Calendar.YEAR));
-        customDeadlineDate.setMonth(cal.get(Calendar.MONTH));
+        customDeadlineDate.setMonth(cal.get(Calendar.MONTH)+1);
         customDeadlineDate.setDay(cal.get(Calendar.DAY_OF_MONTH));
         customDeadlineDate.setHour(cal.get(Calendar.HOUR_OF_DAY));
         customDeadlineDate.setMinute(cal.get(Calendar.MINUTE));
@@ -206,8 +208,8 @@ public class EditTodoActivity extends AppCompatActivity implements DatePickerInt
         int insertedIndexInt = (int) todoEntity.getId();
 
         if(deadlineDate != null && todoNotification.isChecked() && updatedRows > 0) {
-            ScheduleNotification.cancelNotification(this, insertedIndexInt);
-            ScheduleNotification.createNotification(this, (int) todoEntity.getId(),
+            scheduleNotification.cancelNotification(this, insertedIndexInt);
+            scheduleNotification.createNotification(this, (int) todoEntity.getId(),
                     todoEntity.getTitle(), todoEntity.getDescription(), todoEntity.getDeadlineDate());
         }
 
