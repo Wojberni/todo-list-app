@@ -2,13 +2,27 @@
     <string name="app_name">ToDoListApp</string>
     <string name="add_todo_text">ADD TODO</string>
     <string name="search_hint">Enter Todo Name…</string>
-    <string name="hide_tasks">Hide Tasks</string>
+    <string name="hide_tasks">Hide done Tasks</string>
     <string name="sort_by_deadline_time">Sort By Deadline Time</string>
     <string name="search">Search</string>
     <string name="settings">SETTINGS</string>
     <string name="insert_category_to_filter">Insert Category to filter:</string>
     <string name="save_settings">Save Settings</string>
     <string name="select_minutes_earlier">Select how many minutes earlier should the notification go off:</string>
+    <string name="title">Title</string>
+    <string name="description">Description</string>
+    <string name="creation_date">Creation Date</string>
+    <string name="category">Category</string>
+    <string name="deadline_date">Deadline Date</string>
+    <string name="attachment">Attachment</string>
+    <string name="done">Done</string>
+    <string name="notify">Notify</string>
+    <string name="date">Date</string>
+    <string name="time">Time</string>
+    <string name="add_attachment">Add attachment</string>
+    <string name="file">File</string>
+    <string name="edit">EDIT</string>
+    <string name="delete">DELETE</string>
 
     <string-array name="filter_category_spinner">
         <item>0</item>

@@ -27,7 +27,7 @@ public final class ScheduleNotification {
         return INSTANCE;
     }
 
-    private List<NotificationIntent> notificationIntentList = new ArrayList<>();
+    private final List<NotificationIntent> notificationIntentList = new ArrayList<>();
     private Integer notificationOffset = 0;
 
     private static final String alarmTitleExtra = "alarmTitle";

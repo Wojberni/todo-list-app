@@ -39,7 +39,7 @@ public class AlarmReceiver extends BroadcastReceiver {
                 intent, PendingIntent.FLAG_IMMUTABLE);
         NotificationCompat.Builder notificationBuilder =
                 new NotificationCompat.Builder(context, channelId)
-                        .setSmallIcon(R.drawable.ic_launcher_background)
+                        .setSmallIcon(android.R.drawable.ic_lock_idle_alarm)
                         .setContentTitle(title)
                         .setContentText(description)
                         .setContentIntent(pendingIntent)
